@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f0;min-height:100vh;padding:24px;color:#111}
+.wrap{max-width:780px;margin:0 auto}
+h1{font-size:20px;font-weight:500;margin-bottom:4px}
+.sub{font-size:14px;color:#888;margin-bottom:24px}
+.tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.tab{padding:9px 18px;border-radius:10px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:14px;color:#888;font-family:inherit}
+.tab.active{background:#111;color:#fff;border-color:#111}
+.hidden{display:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:24px}
+.stat{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #e8e8e4}
+.sl{font-size:12px;color:#888;margin-bottom:4px}.sv{font-size:24px;font-weight:500}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.pill{padding:6px 14px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;color:#888;font-family:inherit}
+.pill.active{background:#111;color:#fff;border-color:#111}
+.card{background:#fff;border:1px solid #e8e8e4;border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.tag{display:inline-block;font-size:12px;padding:3px 10px;border-radius:8px;font-weight:500}
+.tag-new{background:#E6F1FB;color:#0C447C}.tag-open{background:#FAEEDA;color:#633806}.tag-done{background:#EAF3DE;color:#27500A}.tag-wont{background:#f0efea;color:#666}
+.ct{font-size:11px;padding:3px 10px;border-radius:8px;display:inline-block;font-weight:500}
+.ct-fb{background:#f0efea;color:#666}.ct-cel{background:#EAF3DE;color:#27500A}
+.bdg{font-size:11px;padding:2px 8px;border-radius:20px;display:inline-block}
+.bdg-a{color:#999;background:#f0efea}.bdg-n{color:#27500A;background:#EAF3DE}
+.tm{font-size:12px;color:#aaa}
+.ft{font-size:15px;line-height:1.6}
+.rb{background:#f9f9f6;border-left:3px solid #85B7EB;padding:12px;margin-top:12px;border-radius:0 10px 10px 0;font-size:14px;color:#555}
+.rb strong{font-size:13px;display:block;margin-bottom:4px}
+hr{border:none;border-top:1px solid #eee;margin:16px 0}
+label{display:block;font-size:13px;color:#888;margin-bottom:6px}
+select,textarea,input{padding:8px 12px;border-radius:10px;border:1px solid #ddd;font-size:14px;font-family:inherit;background:#fff;color:#111}
+textarea{width:100%;resize:vertical;min-height:70px;line-height:1.5}
+.btn{padding:8px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-family:inherit}
+.btn-d{background:#111;color:#fff}.btn-g{background:#f0efea;color:#555}
+.br{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ai{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;flex-wrap:wrap}
+.ai input[type="checkbox"]{width:auto;margin:0;cursor:pointer}
+.dt{text-decoration:line-through;color:#aaa}
+.empty{text-align:center;padding:40px 20px;color:#aaa;font-size:14px}
+.ac{background:#fff;border:1px solid #e8e8e4;border-radius:14px;padding:16px 18px;margin-bottom:12px}
+.ad{font-size:14px;line-height:1.5}.am{font-size:12px;color:#aaa;margin-top:6px}
+.ov{color:#A32D2D}
+.acl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.acl input{font-size:13px;padding:6px 10px}
+.auth{max-width:360px;margin:80px auto;text-align:center}
+.auth input{width:100%;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="auth" class="auth">
+<h1>Manager dashboard</h1><p class="sub">Enter your manager key</p>
+<input type="password" id="ak" placeholder="Manager key" onkeydown="if(event.key==='Enter')doAuth()">
+<br><button class="btn btn-d" onclick="doAuth()" style="margin-top:8px;width:100%">Access dashboard</button>
+<p id="ae" style="color:#A32D2D;font-size:13px;margin-top:12px" class="hidden">Invalid key.</p>
+</div>
+<div id="main" class="hidden">
+<h1>Team feedback</h1><p class="sub">All feedback and celebrations from your team.</p>
+<div class="tabs"><button class="tab active" onclick="sT('fb')">Feedback</button><button class="tab" onclick="sT('act')">Action log</button></div>
+<div id="p-fb"><div class="stats" id="fs"></div><div class="filters" id="ff"></div><div id="fl"></div></div>
+<div id="p-act" class="hidden"><div class="stats" id="as"></div><div class="filters" id="af"></div><div id="al"></div></div>
+</div>
+</div>
+<script>
+var API='https://script.google.com/a/macros/ovo.com/s/AKfycbzGlezkcBONKMddnfTpGRU3Hnluhbqa-r_LmuGSBXuJyWzvEeJbExZQecIjKvnsGgsp/exec',K='',fbs=[],acts=[],fbF='all',actF='all';
+var MS=[{e:'😤'},{e:'😟'},{e:'😔'},{e:'😐'},{e:'🤷'},{e:'🙂'},{e:'😊'},{e:'😄'},{e:'🙏'},{e:'🔥'}];
+var SS={new:{l:'New',c:'tag-new'},open:{l:'In progress',c:'tag-open'},done:{l:'Resolved',c:'tag-done'},wontfix:{l:"Won't action",c:'tag-wont'}};
+
+function doAuth(){K=document.getElementById('ak').value.trim();if(!K)return;
+fetch(API+'?action=feedback&key='+encodeURIComponent(K)).then(function(r){return r.json()}).then(function(d){
+if(d.error){document.getElementById('ae').classList.remove('hidden');return}
+document.getElementById('auth').classList.add('hidden');document.getElementById('main').classList.remove('hidden');fbs=d;lA()
+}).catch(function(){document.getElementById('ae').classList.remove('hidden')})}
+(function(){var p=new URLSearchParams(location.search);var k=p.get('key');if(k){document.getElementById('ak').value=k;doAuth()}})();
+
+function lA(){fetch(API+'?action=actions&key='+encodeURIComponent(K)).then(function(r){return r.json()}).then(function(d){if(!d.error)acts=d;rF()})}
+
+function sT(n){document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',(i===0&&n==='fb')||(i===1&&n==='act'))});
+document.getElementById('p-fb').classList.toggle('hidden',n!=='fb');document.getElementById('p-act').classList.toggle('hidden',n!=='act');if(n==='act')rA()}
+
+function tA(ts){if(!ts)return'';var d=Date.now()-new Date(ts).getTime();if(d<36e5)return Math.max(1,Math.round(d/6e4))+'m ago';if(d<864e5)return Math.round(d/36e5)+'h ago';return Math.round(d/864e5)+'d ago'}
+function sTag(s){var x=SS[s]||SS.new;return'<span class="tag '+x.c+'">'+x.l+'</span>'}
+function cTag(c){var cl=c&&c.toLowerCase().includes('celebrat');return'<span class="ct '+(cl?'ct-cel':'ct-fb')+'">'+c+'</span>'}
+function aBdg(f){return f.anon===false?'<span class="bdg bdg-n">Named</span>':'<span class="bdg bdg-a">Anonymous</span>'}
+
+function rF(){
+var nw=0,op=0,dn=0;fbs.forEach(function(f){if(f.status==='new')nw++;if(f.status==='open')op++;if(f.status==='done')dn++});
+document.getElementById('fs').innerHTML='<div class="stat"><div class="sl">Total</div><div class="sv">'+fbs.length+'</div></div><div class="stat"><div class="sl">New</div><div class="sv" style="color:#0C447C">'+nw+'</div></div><div class="stat"><div class="sl">In progress</div><div class="sv" style="color:#633806">'+op+'</div></div><div class="stat"><div class="sl">Resolved</div><div class="sv" style="color:#27500A">'+dn+'</div></div>';
+document.getElementById('ff').innerHTML='<span style="font-size:13px;color:#888">Filter:</span>'+['all','new','open','done'].map(function(f){return'<button class="pill'+(fbF===f?' active':'')+'" onclick="sFf(\''+f+'\')">'+(f==='all'?'All':(SS[f]||{l:f}).l)+'</button>'}).join('');
+var fl=fbF==='all'?fbs:fbs.filter(function(f){return f.status===fbF});
+if(!fl.length){document.getElementById('fl').innerHTML='<div class="empty">No feedback yet.</div>';return}
+document.getElementById('fl').innerHTML=fl.map(function(fb){
+var fa=acts.filter(function(a){return a.feedback_id===fb.id});
+return'<div class="card"><div class="row">'+sTag(fb.status)+cTag(fb.category)+(fb.mood!=null&&MS[fb.mood]?'<span style="font-size:16px">'+MS[fb.mood].e+'</span>':'')+aBdg(fb)+'<span class="tm">'+tA(fb.timestamp)+'</span></div><p class="ft">'+fb.text+'</p>'+(fb.response?'<div class="rb"><strong>Your response:</strong>'+fb.response+'</div>':'')+'<hr><label>Status</label><select onchange="uS(\''+fb.id+'\',this.value)" style="width:auto;font-size:13px;padding:5px 10px"><option value="new"'+(fb.status==='new'?' selected':'')+'>New</option><option value="open"'+(fb.status==='open'?' selected':'')+'>In progress</option><option value="done"'+(fb.status==='done'?' selected':'')+'>Resolved</option><option value="wontfix"'+(fb.status==='wontfix'?' selected':'')+">Won't action</option></select><div style=\"margin-top:14px\"><label>Your response (visible to submitter)</label><textarea id=\"r-"+fb.id+'" placeholder="Respond...">'+(fb.response||'')+'</textarea></div><div class="br"><button class="btn btn-d" onclick="sR(\''+fb.id+'\')">Save response</button><button class="btn btn-g" onclick="aAc(\''+fb.id+'\')">+ Add action</button></div>'+(fa.length?'<div style="margin-top:14px"><label>Actions</label>'+fa.map(function(a){return'<div class="ai"><input type="checkbox"'+(a.status==='done'?' checked':'')+' onchange="tAc(\''+a.id+'\',this.checked)"><span class="'+(a.status==='done'?'dt':'')+'">'+a.description+'</span><span class="tm">'+a.owner+' · '+a.due+'</span></div>'}).join('')+'</div>':'')+'</div>'}).join('')}
+
+function rA(){
+var td=new Date().toISOString().slice(0,10),op=0,dn=0,ov=0;
+acts.forEach(function(a){if(a.status==='open'){op++;if(a.due&&a.due<td)ov++}if(a.status==='done')dn++});
+document.getElementById('as').innerHTML='<div class="stat"><div class="sl">Total</div><div class="sv">'+acts.length+'</div></div><div class="stat"><div class="sl">Open</div><div class="sv" style="color:#633806">'+op+'</div></div><div class="stat"><div class="sl">Done</div><div class="sv" style="color:#27500A">'+dn+'</div></div><div class="stat"><div class="sl">Overdue</div><div class="sv" style="color:#A32D2D">'+ov+'</div></div>';
+document.getElementById('af').innerHTML=['all','open','done','overdue'].map(function(f){return'<button class="pill'+(actF===f?' active':'')+'" onclick="sAf(\''+f+'\')">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>'}).join('');
+var fl=acts;if(actF==='open')fl=acts.filter(function(a){return a.status==='open'});if(actF==='done')fl=acts.filter(function(a){return a.status==='done'});if(actF==='overdue')fl=acts.filter(function(a){return a.status==='open'&&a.due&&a.due<td});
+if(!fl.length){document.getElementById('al').innerHTML='<div class="empty">No actions here.</div>';return}
+document.getElementById('al').innerHTML=fl.map(function(a){var io=a.status==='open'&&a.due&&a.due<td;var fb=fbs.find(function(f){return f.id===a.feedback_id});
+return'<div class="ac"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div style="flex:1"><p class="ad'+(a.status==='done'?' dt':'')+'">'+a.description+'</p>'+(fb?cTag('From: '+fb.category):'')+'</div><span class="tag '+(a.status==='done'?'tag-done':io?'tag-new':'tag-open')+'">'+(a.status==='done'?'Done':io?'Overdue':'Open')+'</span></div><p class="am'+(io?' ov':'')+'">Owner: '+a.owner+' · Due: '+a.due+(io?' (overdue)':'')+'</p><div class="acl"><input type="text" value="'+a.owner+'" style="width:120px" onchange="uAf(\''+a.id+'\',\'owner\',this.value)"><input type="date" value="'+a.due+'" style="width:150px" onchange="uAf(\''+a.id+'\',\'due\',this.value)"><button class="btn btn-g" onclick="tAc(\''+a.id+'\','+(a.status!=='done')+')">'+(a.status==='done'?'Reopen':'Mark done')+'</button></div></div>'}).join('')}
+
+function sFf(f){fbF=f;rF()}function sAf(f){actF=f;rA()}
+function ap(b,cb){b.key=K;fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b)}).then(function(r){return r.json()}).then(function(d){if(cb)cb(d)}).catch(function(e){console.error(e)})}
+function uS(id,v){var fb=fbs.find(function(f){return f.id===id});if(fb)fb.status=v;ap({action:'update_status',id:id,status:v});rF()}
+function sR(id){var v=document.getElementById('r-'+id).value.trim();var fb=fbs.find(function(f){return f.id===id});if(fb){fb.response=v;if(fb.status==='new')fb.status='open'}ap({action:'respond',id:id,response:v});rF()}
+function aAc(fbId){var d=prompt('Describe the action:');if(!d)return;var du=prompt('Due date (YYYY-MM-DD):')||new Date(Date.now()+604800000).toISOString().slice(0,10);var o=prompt('Owner:')||'Me';ap({action:'add_action',feedback_id:fbId,description:d,owner:o,due:du},function(r){if(r.success&&r.id){acts.push({id:r.id,feedback_id:fbId,description:d,owner:o,due:du,status:'open'});rF()}})}
+function tAc(id,done){var a=acts.find(function(x){return x.id===id});if(a)a.status=done?'done':'open';ap({action:'update_action',id:id,status:done?'done':'open'});rF();rA()}
+function uAf(id,k,v){var a=acts.find(function(x){return x.id===id});if(a)a[k]=v;var b={action:'update_action',id:id};b[k]=v;ap(b)}
+</script>
+</body>
+</html>
