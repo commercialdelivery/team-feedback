@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team feedback</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f0;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;color:#111}
+.modal{background:#fff;border-radius:16px;box-shadow:0 2px 20px rgba(0,0,0,0.08);max-width:460px;width:100%;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid #e8e8e4}
+.tab{flex:1;padding:14px;text-align:center;font-size:14px;color:#888;cursor:pointer;border:none;background:none;font-family:inherit}
+.tab.active{color:#111;font-weight:500;box-shadow:inset 0 -2px 0 #111}
+.bd{padding:20px}
+.hidden{display:none}
+label{display:block;font-size:13px;color:#888;margin-bottom:6px}
+textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #ddd;font-size:14px;font-family:inherit;background:#fff;color:#111;resize:vertical;min-height:100px;line-height:1.6}
+textarea:focus{outline:none;border-color:#999}
+.btn{padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-family:inherit}
+.btn:active{transform:scale(0.98)}
+.btn-dark{background:#111;color:#fff;width:100%}.btn-dark:hover{background:#333}
+.btn-green{background:#27500A;color:#fff}.btn-green:hover{background:#3B6D11}
+.btn-ghost{background:#f0efea;color:#555;padding:10px 14px}.btn-ghost:hover{background:#e5e5e0}
+.cat-row{display:flex;gap:8px;margin-bottom:16px}
+.cat-btn{flex:1;padding:12px;border-radius:10px;border:1px solid #ddd;background:#fff;cursor:pointer;font-family:inherit;font-size:14px;color:#888;text-align:center}
+.cat-btn.a-fb{border:2px solid #111;background:#f5f5f0;color:#111;font-weight:500}
+.cat-btn.a-cel{border:2px solid #27500A;background:#EAF3DE;color:#27500A;font-weight:500}
+.ci{font-size:18px;display:block;margin-bottom:4px}
+.moods{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.mood{display:flex;flex-direction:column;align-items:center;cursor:pointer;opacity:0.35;transition:opacity 0.15s;padding:4px 2px;min-width:38px}
+.mood.active{opacity:1}
+.me{font-size:22px}.ml{font-size:10px;color:#888;margin-top:2px}
+.ab{border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ab-on{background:#f9f9f6;border:1px solid #ddd}.ab-off{background:#FFF9E6;border:1px solid #EFD980}
+.tgl{width:48px;height:26px;border-radius:13px;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.tgl-k{width:22px;height:22px;border-radius:11px;background:#fff;position:absolute;top:2px;transition:left 0.2s}
+.dots{display:flex;gap:6px;align-items:center;margin-bottom:16px}
+.dot{width:8px;height:8px;border-radius:50%;background:#ddd}
+.dot-a{background:#111}.dot-d{background:#27500A}
+.dl{font-size:12px;color:#888;margin-left:6px}
+.ob{background:#f9f9f6;border-left:3px solid #ccc;padding:14px;margin-bottom:14px;border-radius:0 10px 10px 0}
+.ar{background:#f9f9f6;border-left:3px solid #27500A;padding:14px;margin-bottom:14px;border-radius:0 10px 10px 0}
+.nr{background:#FFF9E6;border-left:3px solid #EFD980;padding:14px;margin-bottom:14px;border-radius:0 10px 10px 0}
+.bl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.bl-g{color:#aaa}.bl-gr{color:#27500A}.bl-am{color:#854F0B}
+.ot{font-size:13px;color:#999;font-style:italic;line-height:1.6}
+.at{width:100%;border:none;background:transparent;padding:0;font-size:15px;color:#111;line-height:1.6;resize:vertical;min-height:80px;font-family:inherit}
+.at:focus{outline:none}
+.ht{font-size:12px;color:#aaa;margin-top:6px}
+.br{display:flex;gap:8px;flex-wrap:wrap}
+.nt{font-size:12px;color:#aaa;margin-top:12px}
+.dw{text-align:center;padding:30px 10px}
+.di{font-size:40px;margin-bottom:12px}
+.ld{text-align:center;padding:30px 10px}
+.err{background:#FCEBEB;border-radius:10px;padding:10px 14px;font-size:13px;color:#791F1F;margin-bottom:14px}
+.rc{background:#fff;border:1px solid #e8e8e4;border-radius:12px;padding:16px;margin-bottom:12px}
+.rct{display:inline-block;font-size:11px;padding:3px 10px;border-radius:8px;font-weight:500;margin-right:6px}
+.rct-fb{background:#f0efea;color:#666}.rct-cel{background:#EAF3DE;color:#27500A}
+.bdg{font-size:11px;padding:2px 8px;border-radius:20px;display:inline-block;margin-right:6px}
+.bdg-a{color:#999;background:#f0efea}.bdg-n{color:#27500A;background:#EAF3DE}
+.rq{font-size:14px;color:#888;line-height:1.6;margin:10px 0 12px;font-style:italic}
+.rr{background:#f5f5f0;border-left:3px solid #85B7EB;padding:12px;border-radius:0 10px 10px 0}
+.rrl{font-size:11px;color:#aaa;margin-bottom:6px}
+.rrt{font-size:14px;color:#444;line-height:1.6}
+.empty{text-align:center;padding:30px 10px;color:#aaa;font-size:14px}
+.fld{margin-bottom:16px}
+.st-tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:8px;font-weight:500;margin-right:6px}
+.st-new{background:#E6F1FB;color:#0C447C}
+.st-open{background:#FAEEDA;color:#633806}
+.st-done{background:#EAF3DE;color:#27500A}
+.st-wait{background:#f0efea;color:#888}
+</style>
+</head>
+<body>
+<div class="modal">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('submit')">Give feedback</button>
+    <button class="tab" onclick="switchTab('mine')">My submissions</button>
+  </div>
+  <div class="bd">
+    <div id="p-submit">
+      <div id="s-write">
+        <div class="dots"><div class="dot dot-a"></div><div class="dot"></div><div class="dot"></div><span class="dl">Write your message</span></div>
+        <label>What would you like to do?</label>
+        <div class="cat-row">
+          <button class="cat-btn a-fb" id="cat-fb" onclick="setCat('Feedback something')"><span class="ci">💬</span>Feedback something</button>
+          <button class="cat-btn" id="cat-cel" onclick="setCat('Celebrate someone')"><span class="ci">🎉</span>Celebrate someone</button>
+        </div>
+        <div class="fld">
+          <label id="txt-l">What's on your mind?</label>
+          <textarea id="fb-t" placeholder="Just say it however it comes out. Don't worry about how it reads."></textarea>
+        </div>
+        <div class="fld">
+          <label>How do you feel? (optional)</label>
+          <div class="moods" id="mood-r"></div>
+        </div>
+        <div id="anon-box" class="ab ab-on">
+          <div>
+            <p style="font-size:14px;font-weight:500;margin-bottom:2px" id="a-title">🔒 Anonymise this</p>
+            <p style="font-size:12px;color:#888;margin:0" id="a-desc">AI will rewrite your words in a different voice. Your original is never stored.</p>
+          </div>
+          <div class="tgl" id="tgl" onclick="flipAnon()" style="background:#27500A"><div class="tgl-k" id="tgl-k" style="left:24px"></div></div>
+        </div>
+        <button class="btn btn-dark" id="sub-btn" onclick="handleNext()">Anonymise my feedback</button>
+      </div>
+      <div id="s-review" class="hidden">
+        <div class="dots"><div class="dot dot-d"></div><div class="dot dot-a"></div><div class="dot"></div><span class="dl">Review the rewrite</span></div>
+        <div class="ob"><div class="bl bl-g">Your original (never sent)</div><p class="ot" id="orig-d"></p></div>
+        <div id="ld" class="ld hidden"><p style="font-size:13px;color:#888;margin-bottom:10px">Rewriting your feedback...</p><p style="font-size:28px">✍️</p></div>
+        <div id="rv" class="hidden">
+          <div id="err" class="err hidden"></div>
+          <div class="ar"><div class="bl bl-gr">Anonymised version — what gets sent</div><textarea class="at" id="anon-d"></textarea><p class="ht">Edit this if anything still feels too identifying.</p></div>
+          <div class="br">
+            <button class="btn btn-green" onclick="sendFb()">Send this feedback</button>
+            <button class="btn btn-ghost" onclick="retryAnon()">Rewrite again</button>
+            <button class="btn btn-ghost" onclick="showStep('write')">Edit original</button>
+          </div>
+          <p class="nt">Once sent, your original is deleted. Only the anonymised version is saved.</p>
+        </div>
+      </div>
+      <div id="s-confirm" class="hidden">
+        <div class="dots"><div class="dot dot-d"></div><div class="dot dot-a"></div><div class="dot"></div><span class="dl">Confirm your message</span></div>
+        <div class="nr"><div class="bl bl-am">Sending as written (not anonymised)</div><textarea class="at" id="conf-d"></textarea></div>
+        <div class="br">
+          <button class="btn btn-dark" style="width:auto" onclick="sendFb()">Send this feedback</button>
+          <button class="btn btn-ghost" onclick="showStep('write')">Go back and edit</button>
+        </div>
+      </div>
+      <div id="s-done" class="hidden">
+        <div class="dots"><div class="dot dot-d"></div><div class="dot dot-d"></div><div class="dot dot-d"></div><span class="dl" style="color:#27500A">Sent</span></div>
+        <div class="dw">
+          <div class="di" id="done-i">✅</div>
+          <p style="font-size:16px;font-weight:500;margin-bottom:8px" id="done-t">Feedback sent anonymously</p>
+          <p style="font-size:14px;color:#888;margin-bottom:24px">Check My submissions to see when your manager replies.</p>
+          <button class="btn btn-dark" style="width:auto" onclick="resetForm()">Submit another</button>
+        </div>
+      </div>
+    </div>
+    <div id="p-mine" class="hidden"><div id="mine-list"></div></div>
+  </div>
+</div>
+<script>
+var API_URL = 'https://script.google.com/a/macros/ovo.com/s/AKfycbzGlezkcBONKMddnfTpGRU3Hnluhbqa-r_LmuGSBXuJyWzvEeJbExZQecIjKvnsGgsp/exec';
+var MOODS=[{e:'😤',l:'Frustrated'},{e:'😟',l:'Worried'},{e:'😔',l:'Deflated'},{e:'😐',l:'Neutral'},{e:'🤷',l:'Meh'},{e:'🙂',l:'Fine'},{e:'😊',l:'Happy'},{e:'😄',l:'Great'},{e:'🙏',l:'Grateful'},{e:'🔥',l:'Fired up'}];
+var ST_MAP={new:{l:'Awaiting response',c:'st-new'},open:{l:'In progress',c:'st-open'},done:{l:'Resolved',c:'st-done'},wontfix:{l:"Won't action",c:'st-done'}};
+var mood=null,anonMode=true,cat='Feedback something',origTxt='';
+
+function getMyIds(){try{return JSON.parse(localStorage.getItem('fb_my_ids')||'[]')}catch(e){return[]}}
+function saveMyId(id){var ids=getMyIds();ids.push(id);localStorage.setItem('fb_my_ids',JSON.stringify(ids))}
+
+(function(){
+  var row=document.getElementById('mood-r');
+  MOODS.forEach(function(m,i){
+    var d=document.createElement('div');d.className='mood';d.onclick=function(){setMood(i)};d.title=m.l;d.id='mood-'+i;
+    d.innerHTML='<span class="me">'+m.e+'</span>';row.appendChild(d);
+  });
+})();
+
+function setMood(n){
+  mood=n;
+  MOODS.forEach(function(_,i){
+    var el=document.getElementById('mood-'+i);el.classList.toggle('active',i===n);
+    var lbl=el.querySelector('.ml');
+    if(i===n&&!lbl){var s=document.createElement('span');s.className='ml';s.textContent=MOODS[i].l;el.appendChild(s)}
+    else if(i!==n&&lbl)lbl.remove();
+  });
+}
+
+function setCat(c){
+  cat=c;var cel=c==='Celebrate someone';
+  document.getElementById('cat-fb').className='cat-btn'+(cel?'':' a-fb');
+  document.getElementById('cat-cel').className='cat-btn'+(cel?' a-cel':'');
+  document.getElementById('txt-l').textContent=cel?'Who or what are you celebrating?':"What's on your mind?";
+  document.getElementById('fb-t').placeholder=cel?"Shout out a person, a team, a win. Be as specific as you want.":"Just say it however it comes out. Don't worry about how it reads.";
+  anonMode=!cel;renderToggle();
+  document.getElementById('sub-btn').textContent=anonMode?'Anonymise my feedback':'Preview and send';
+}
+
+function flipAnon(){
+  anonMode=!anonMode;renderToggle();
+  document.getElementById('sub-btn').textContent=anonMode?'Anonymise my feedback':'Preview and send';
+}
+
+function renderToggle(){
+  document.getElementById('anon-box').className='ab '+(anonMode?'ab-on':'ab-off');
+  document.getElementById('a-title').textContent=anonMode?'🔒 Anonymise this':'✉️ Send as written';
+  document.getElementById('a-desc').textContent=anonMode?'AI will rewrite your words in a different voice. Your original is never stored.':"Your exact words will be sent. Great for praise or when you're happy to be identified.";
+  document.getElementById('tgl').style.background=anonMode?'#27500A':'#ccc';
+  document.getElementById('tgl-k').style.left=anonMode?'24px':'2px';
+}
+
+function switchTab(n){
+  document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',(i===0&&n==='submit')||(i===1&&n==='mine'))});
+  document.getElementById('p-submit').classList.toggle('hidden',n!=='submit');
+  document.getElementById('p-mine').classList.toggle('hidden',n!=='mine');
+  if(n==='mine')loadMine();
+}
+
+function showStep(n){['write','review','confirm','done'].forEach(function(s){document.getElementById('s-'+s).classList.toggle('hidden',s!==n)})}
+
+function handleNext(){
+  var t=document.getElementById('fb-t').value.trim();if(!t)return alert('Please write something first.');
+  origTxt=t;
+  if(anonMode){document.getElementById('orig-d').textContent=t;showStep('review');callAnon(t)}
+  else{document.getElementById('conf-d').value=t;showStep('confirm')}
+}
+
+function retryAnon(){callAnon(origTxt)}
+
+function callAnon(t){
+  document.getElementById('ld').classList.remove('hidden');document.getElementById('rv').classList.add('hidden');document.getElementById('err').classList.add('hidden');
+  fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'anonymise',text:t})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    document.getElementById('ld').classList.add('hidden');document.getElementById('rv').classList.remove('hidden');
+    if(d.error){document.getElementById('err').textContent=d.error;document.getElementById('err').classList.remove('hidden');document.getElementById('anon-d').value=t}
+    else{document.getElementById('anon-d').value=d.rewritten||t}
+  })
+  .catch(function(){
+    document.getElementById('ld').classList.add('hidden');document.getElementById('rv').classList.remove('hidden');
+    document.getElementById('err').textContent='Could not connect. Edit the text manually below.';document.getElementById('err').classList.remove('hidden');document.getElementById('anon-d').value=t;
+  });
+}
+
+function sendFb(){
+  var t=anonMode?document.getElementById('anon-d').value.trim():document.getElementById('conf-d').value.trim();if(!t)return;
+  fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'submit',text:t,category:cat,mood:mood,anon:anonMode})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.success){
+      saveMyId(d.id);
+      document.getElementById('done-i').textContent=anonMode?'✅':'🎉';
+      document.getElementById('done-t').textContent=anonMode?'Feedback sent anonymously':'Message sent';
+      showStep('done');
+    }else{alert('Error: '+(d.error||'Unknown'))}
+  })
+  .catch(function(){alert('Could not submit. Please try again.')});
+}
+
+function resetForm(){
+  document.getElementById('fb-t').value='';mood=null;cat='Feedback something';anonMode=true;
+  MOODS.forEach(function(_,i){var el=document.getElementById('mood-'+i);el.classList.remove('active');var l=el.querySelector('.ml');if(l)l.remove()});
+  setCat('Feedback something');showStep('write');
+}
+
+function loadMine(){
+  var list=document.getElementById('mine-list');
+  var ids=getMyIds();
+  if(!ids.length){list.innerHTML='<div class="empty">You haven\'t submitted any feedback yet.</div>';return}
+  list.innerHTML='<div class="empty">Loading your submissions...</div>';
+  fetch(API_URL+'?action=my_feedback&ids='+encodeURIComponent(ids.join(',')))
+  .then(function(r){return r.json()})
+  .then(function(data){
+    if(!data.length){list.innerHTML='<div class="empty">No submissions found.</div>';return}
+    list.innerHTML=data.map(function(fb){
+      var cel=fb.category&&fb.category.toLowerCase().includes('celebrat');
+      var st=ST_MAP[fb.status]||{l:'Submitted',c:'st-wait'};
+      return '<div class="rc">'+
+        '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">'+
+          '<span class="rct '+(cel?'rct-cel':'rct-fb')+'">'+fb.category+'</span>'+
+          (fb.anon?'<span class="bdg bdg-a">Anonymised</span>':'<span class="bdg bdg-n">Named</span>')+
+          '<span class="st-tag '+st.c+'">'+st.l+'</span>'+
+          (fb.mood!=null&&MOODS[fb.mood]?'<span style="font-size:16px">'+MOODS[fb.mood].e+'</span>':'')+
+        '</div>'+
+        '<p style="font-size:14px;line-height:1.6;color:#444">'+fb.text+'</p>'+
+        (fb.response?
+          '<div class="rr" style="margin-top:12px"><div class="rrl">Manager response</div><div class="rrt">'+fb.response+'</div></div>':
+          '<p style="font-size:13px;color:#aaa;margin-top:10px;font-style:italic">No response yet. Check back later.</p>')+
+      '</div>'
+    }).join('');
+  })
+  .catch(function(){list.innerHTML='<div class="empty">Could not load submissions.</div>'});
+}
+</script>
+</body>
+</html>
