@@ -58,7 +58,7 @@ textarea{width:100%;resize:vertical;min-height:70px;line-height:1.5}
 <h1>Manager dashboard</h1><p class="sub">Enter your manager key</p>
 <input type="password" id="ak" placeholder="Manager key" onkeydown="if(event.key==='Enter')doAuth()">
 <br><button class="btn btn-d" onclick="doAuth()" style="margin-top:8px;width:100%">Access dashboard</button>
-<p id="ae" style="color:#A32D2D;font-size:13px;margin-top:12px" class="hidden">Invalid key.</p>
+<p id="ae" style="color:#A32D2D;font-size:13px;margin-top:12px" class="hidden">Invalid key. Check your MANAGER_KEY script property.</p>
 </div>
 <div id="main" class="hidden">
 <h1>Team feedback</h1><p class="sub">All feedback and celebrations from your team.</p>
@@ -72,14 +72,22 @@ var API='https://script.google.com/a/macros/ovo.com/s/AKfycbzGlezkcBONKMddnfTpGR
 var MS=[{e:'😤'},{e:'😟'},{e:'😔'},{e:'😐'},{e:'🤷'},{e:'🙂'},{e:'😊'},{e:'😄'},{e:'🙏'},{e:'🔥'}];
 var SS={new:{l:'New',c:'tag-new'},open:{l:'In progress',c:'tag-open'},done:{l:'Resolved',c:'tag-done'},wontfix:{l:"Won't action",c:'tag-wont'}};
 
-function doAuth(){K=document.getElementById('ak').value.trim();if(!K)return;
-fetch(API+'?action=feedback&key='+encodeURIComponent(K)).then(function(r){return r.json()}).then(function(d){
-if(d.error){document.getElementById('ae').classList.remove('hidden');return}
-document.getElementById('auth').classList.add('hidden');document.getElementById('main').classList.remove('hidden');fbs=d;lA()
-}).catch(function(){document.getElementById('ae').classList.remove('hidden')})}
+function ap(body,cb){
+  fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)})
+  .then(function(r){return r.json()}).then(function(d){if(cb)cb(d)}).catch(function(e){console.error(e)});
+}
+
+function doAuth(){
+  K=document.getElementById('ak').value.trim();if(!K)return;
+  ap({action:'feedback',key:K},function(d){
+    if(d.error){document.getElementById('ae').classList.remove('hidden');return}
+    document.getElementById('auth').classList.add('hidden');document.getElementById('main').classList.remove('hidden');
+    fbs=d;lA();
+  });
+}
 (function(){var p=new URLSearchParams(location.search);var k=p.get('key');if(k){document.getElementById('ak').value=k;doAuth()}})();
 
-function lA(){fetch(API+'?action=actions&key='+encodeURIComponent(K)).then(function(r){return r.json()}).then(function(d){if(!d.error)acts=d;rF()})}
+function lA(){ap({action:'actions',key:K},function(d){if(!d.error)acts=d;rF()})}
 
 function sT(n){document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',(i===0&&n==='fb')||(i===1&&n==='act'))});
 document.getElementById('p-fb').classList.toggle('hidden',n!=='fb');document.getElementById('p-act').classList.toggle('hidden',n!=='act');if(n==='act')rA()}
@@ -110,12 +118,12 @@ document.getElementById('al').innerHTML=fl.map(function(a){var io=a.status==='op
 return'<div class="ac"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div style="flex:1"><p class="ad'+(a.status==='done'?' dt':'')+'">'+a.description+'</p>'+(fb?cTag('From: '+fb.category):'')+'</div><span class="tag '+(a.status==='done'?'tag-done':io?'tag-new':'tag-open')+'">'+(a.status==='done'?'Done':io?'Overdue':'Open')+'</span></div><p class="am'+(io?' ov':'')+'">Owner: '+a.owner+' · Due: '+a.due+(io?' (overdue)':'')+'</p><div class="acl"><input type="text" value="'+a.owner+'" style="width:120px" onchange="uAf(\''+a.id+'\',\'owner\',this.value)"><input type="date" value="'+a.due+'" style="width:150px" onchange="uAf(\''+a.id+'\',\'due\',this.value)"><button class="btn btn-g" onclick="tAc(\''+a.id+'\','+(a.status!=='done')+')">'+(a.status==='done'?'Reopen':'Mark done')+'</button></div></div>'}).join('')}
 
 function sFf(f){fbF=f;rF()}function sAf(f){actF=f;rA()}
-function ap(b,cb){b.key=K;fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b)}).then(function(r){return r.json()}).then(function(d){if(cb)cb(d)}).catch(function(e){console.error(e)})}
-function uS(id,v){var fb=fbs.find(function(f){return f.id===id});if(fb)fb.status=v;ap({action:'update_status',id:id,status:v});rF()}
-function sR(id){var v=document.getElementById('r-'+id).value.trim();var fb=fbs.find(function(f){return f.id===id});if(fb){fb.response=v;if(fb.status==='new')fb.status='open'}ap({action:'respond',id:id,response:v});rF()}
-function aAc(fbId){var d=prompt('Describe the action:');if(!d)return;var du=prompt('Due date (YYYY-MM-DD):')||new Date(Date.now()+604800000).toISOString().slice(0,10);var o=prompt('Owner:')||'Me';ap({action:'add_action',feedback_id:fbId,description:d,owner:o,due:du},function(r){if(r.success&&r.id){acts.push({id:r.id,feedback_id:fbId,description:d,owner:o,due:du,status:'open'});rF()}})}
-function tAc(id,done){var a=acts.find(function(x){return x.id===id});if(a)a.status=done?'done':'open';ap({action:'update_action',id:id,status:done?'done':'open'});rF();rA()}
-function uAf(id,k,v){var a=acts.find(function(x){return x.id===id});if(a)a[k]=v;var b={action:'update_action',id:id};b[k]=v;ap(b)}
+function uS(id,v){var fb=fbs.find(function(f){return f.id===id});if(fb)fb.status=v;ap({action:'update_status',id:id,status:v,key:K});rF()}
+function sR(id){var v=document.getElementById('r-'+id).value.trim();var fb=fbs.find(function(f){return f.id===id});if(fb){fb.response=v;if(fb.status==='new')fb.status='open'}ap({action:'respond',id:id,response:v,key:K});rF()}
+function aAc(fbId){var d=prompt('Describe the action:');if(!d)return;var du=prompt('Due date (YYYY-MM-DD):')||new Date(Date.now()+604800000).toISOString().slice(0,10);var o=prompt('Owner:')||'Me';
+ap({action:'add_action',feedback_id:fbId,description:d,owner:o,due:du,key:K},function(r){if(r.success&&r.id){acts.push({id:r.id,feedback_id:fbId,description:d,owner:o,due:du,status:'open'});rF()}})}
+function tAc(id,done){var a=acts.find(function(x){return x.id===id});if(a)a.status=done?'done':'open';ap({action:'update_action',id:id,status:done?'done':'open',key:K});rF();rA()}
+function uAf(id,k,v){var a=acts.find(function(x){return x.id===id});if(a)a[k]=v;var b={action:'update_action',id:id,key:K};b[k]=v;ap(b)}
 </script>
 </body>
 </html>
